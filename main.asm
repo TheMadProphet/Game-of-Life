@@ -31,15 +31,11 @@ global _start
 
 ;---------------------------------------------------------------
 ; Algorithm:
-;   1. Copy starting map (input) into currentGen and nextGen
+;   1. Generate random map
 ;   2. Print currentGen
 ;   3. Create next generation in nextGen
 ;   4. Copy from nextGen to currentGen
 ;   5. Jump to step 2.
-;
-; Notes:
-;   TODO: Better input method
-;   TODO: Have different sizes for x and y in map (arrSizeX/Y)
 ;---------------------------------------------------------------
 
 _start:
