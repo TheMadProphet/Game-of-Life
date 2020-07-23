@@ -1,2 +1,3 @@
-# Game-of-Life-in-NASM
-Simple implementation of Conway's game of life in NASM
+# Conway's Game of Life
+  make
+  
