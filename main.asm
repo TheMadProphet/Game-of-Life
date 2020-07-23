@@ -58,23 +58,24 @@ _start:
     xor ecx, ecx                ; ECX is y
     xor edx, edx                ; EDX is x
 
-; Copy all input elements into currentGen and nextGen
-copy_input:
-    call random_next
-    mov byte [currentGen + edx + ecx], al   ; currentGen[y][x] = input[y][x]
-    mov byte [nextGen + edx + ecx], al      ; nextGen[y][x] = input[y][x]
+; Generate random map
+gen_map:
+    call random_next            ; Randomly generate cell
+
+    mov byte [currentGen + edx + ecx], al   ; currentGen[y][x] = randCell
+    mov byte [nextGen + edx + ecx], al      ; nextGen[y][x] = randCell
 
     ; x++
     inc dx                      ; Move onto next x
     cmp dx, sizeX               ; Did we reach end of row?
-    jne copy_input              ; If not, continue loop
+    jne gen_map                 ; If not, continue loop
 
     ; y++
     add cx, sizeX               ; Else move on next row
     xor dx, dx                  ; Reset x
 
     cmp cx, sizeX * sizeY       ; Are we on last row?
-    jne copy_input              ; If not, continue loop
+    jne gen_map                 ; If not, continue loop
 
     ; Clear coordinate values
     xor cx, cx                  ; ECX is y
@@ -107,10 +108,9 @@ print_arr:
     cmp cx, sizeX * sizeY       ; Are we on last row?
     jne print_arr               ; If not, continue loop
 
-    ; Clear coordinates
-    ; NOTE: Changed registers for x and y coordinates
-    xor ecx, ecx                ; ECX will be y
-    xor edx, edx                ; EDX will be x
+    ; Reset coordinates
+    xor ecx, ecx                ; ECX is y
+    xor edx, edx                ; EDX is x
 
 update:
     mov eax, currentGen         ; Get current generation's address
@@ -161,7 +161,7 @@ continue:
     cmp cx, sizeX * sizeY       ; Are we on last row?
     jne update                  ; If not, continue loop
 
-    ; Clear coordinates
+    ; Reset coordinates
     xor ecx, ecx                ; ECX is y
     xor edx, edx                ; EDX is x
 
@@ -170,8 +170,8 @@ copy_to_arr:
     mov eax, nextGen            ; Put nextGen's adress in EAX
     add eax, edx                ; Offset it by x
     add eax, ecx                ; Offset it by y
-    mov ebx, [eax]              ; Place value stored in current location in EBX
-    mov byte [currentGen + edx + ecx], bl   ; currentGen[y][x] = input[y][x]
+    mov ebx, [eax]              ; 
+    mov byte [currentGen + edx + ecx], bl   ; currentGen[y][x] = nextGen[y][x]
 
     ; x++
     inc dx                      ; Move onto next x
@@ -347,8 +347,6 @@ clean:
 ;   EBX: Message size
 ; OUT:
 ;   None
-;
-; Notes:
 ;---------------------------------------------------------------
 
 print:
@@ -374,6 +372,14 @@ print:
     ret
 
 
+;---------------------------------------------------------------
+; char random_next -- Randomly returns dead or alive cell character
+;
+; IN:
+;   None
+; OUT:
+;   AL: Generated character
+;---------------------------------------------------------------
 random_next:
     ; Save registers
     push ebx
@@ -414,3 +420,4 @@ random_next:
     
     pop ebx
     ret
+
