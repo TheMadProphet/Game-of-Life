@@ -1,5 +1,7 @@
 # Conway's Game of Life
-To compile code run 
+For compiling run:
+
     make
-To run the program
+For running the program:
+    
     ./gol
