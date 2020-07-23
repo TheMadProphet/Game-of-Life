@@ -4,11 +4,16 @@ SECTION .data
     cleanCmd db `\u001b[0;0H\u001b[0J`
     lenCleanCmd equ $ - cleanCmd
 
+    ;------------------------
+    ; Change characters here
+    ; NOTE: It needs to be a character, NOT string or unicode
     aliveChar db "O"
     deadChar  db `\'`
 
-    sizeX equ 130
-    sizeY equ 35
+    ;------------------------
+    ; Change map size here
+    sizeX equ 35
+    sizeY equ 18
 
 
 SECTION .bss                    ; Section containing uninitialized data
