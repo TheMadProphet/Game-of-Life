@@ -1,35 +1,55 @@
 SECTION .data
     endl db "",0xa
-    arrSize equ 20
+    arrSize equ 40
     cleanCmd db `\u001b[0;0H\u001b[0J`
     lenCleanCmd equ $ - cleanCmd
-    input : db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------X-X-X-------'
-            db '--------X---X-------'
-            db '--------X---X-------'
-            db '--------X---X-------'
-            db '--------X-X-X-------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
-            db '--------------------'
+    input : db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '--------X-X-X---------------X-X-X-------'
+            db '--------X---X---------------X---X-------'
+            db '--------X---X---------------X---X-------'
+            db '--------X---X---------------X---X-------'
+            db '--------X-X-X---------------X-X-X-------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '--------X-X-X---------------X-X-X-------'
+            db '--------X---X---------------X---X-------'
+            db '--------X---X---------------X---X-------'
+            db '--------X---X---------------X---X-------'
+            db '--------X-X-X---------------X-X-X-------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
+            db '----------------------------------------'
     
 
 SECTION .bss                    ; Section containing uninitialized data
     currentGen resb arrSize*arrSize ; 
     nextGen resb arrSize*arrSize    ; We will store new generation here
-    x resb 4
-    y resb 4
+    yMax resb 4
+    xMax resb 1
 
     timeval:
         tv_sec  resb 4
@@ -49,7 +69,6 @@ global _start
 ;   5. Jump to step 2.
 ;
 ; Notes:
-;   Inconsistent use of registers for x and y coordinates
 ;   TODO: Better input method
 ;   TODO: Have different sizes for x and y in map (arrSizeX/Y)
 ;---------------------------------------------------------------
@@ -75,20 +94,20 @@ copy_input:
     mov byte [nextGen + edx + ecx], bl      ; nextGen[y][x] = input[y][x]
 
     ; x++
-    inc edx                     ; Move onto next x
-    cmp edx, arrSize            ; Did we reach end of row?
+    inc dl                      ; Move onto next x
+    cmp dl, arrSize             ; Did we reach end of row?
     jne copy_input              ; If not, continue loop
 
     ; y++
-    add ecx, arrSize            ; Else move on next row
-    xor edx, edx                ; Reset x
+    add cx, arrSize             ; Else move on next row
+    xor dl, dl                  ; Reset x
 
-    cmp ecx, arrSize*arrSize    ; Are we on last row?
+    cmp cx, arrSize*arrSize     ; Are we on last row?
     jne copy_input              ; If not, continue loop
 
     ; Clear coordinate values
-    xor ecx, ecx                ; ECX is y
-    xor edx, edx                ; EDX is x
+    xor cx, cx                  ; ECX is y
+    xor dl, dl                  ; EDX is x
 
 ; Prints the currentGen array
 print_arr:
@@ -101,75 +120,74 @@ print_arr:
     call print
 
     ; x++
-    inc edx                     ; Move onto next x
-    cmp edx, arrSize            ; Did we reach end of row?
+    inc dl                      ; Move onto next x
+    cmp dl, arrSize             ; Did we reach end of row?
     jne print_arr               ; If not, continue loop
 
     ; y++
-    add ecx, arrSize            ; Move on next row
-    xor edx, edx                ; Reset x
+    add cx, arrSize         ; Move on next row
+    xor dl, dl              ; Reset x
 
     ; We reached end of row, so print newline
     mov eax, endl
     mov ebx, 1
     call print
 
-    cmp ecx, arrSize*arrSize    ; Are we on last row?
+    cmp cx, arrSize*arrSize     ; Are we on last row?
     jne print_arr               ; If not, continue loop
 
     ; Clear coordinates
     ; NOTE: Changed registers for x and y coordinates
-    xor eax, eax                ; EAX will be x
-    xor ebx, ebx                ; EBX will be y
+    xor ecx, ecx                ; ECX will be y
+    xor edx, edx                ; EDX will be x
 
 update:
-    mov ecx, currentGen         ; Get current generation's address
-    add ecx, eax                ; Offset it by x
-    add ecx, ebx                ; Offset it by y
-    cmp byte [ecx], 'X'         ; Is the cell alive?
+    mov eax, currentGen         ; Get current generation's address
+    add eax, edx                ; Offset it by x
+    add eax, ecx                ; Offset it by y
+    cmp byte [eax], 'X'         ; Is the cell alive?
     je case_alive               ; If yes, jump to alive case
 
 case_dead:
     call get_neighbour          ; Get alive neighbour count
-    cmp edx, 3                  ; Is neighbour count 3?
+    cmp al, 3                   ; Is neighbour count 3?
     jne continue                ; If not, continue
 
     ; Otherwise we revive cell
-    mov ecx, nextGen            ; Get address of current cell in nextGen
-    add ecx, eax                ; Offset it by x
-    add ecx, ebx                ; Offset it by y
-    mov byte [ecx], 'X'         ; Set current cell to alive
+    mov eax, nextGen            ; Get address of current cell in nextGen
+    add eax, edx                ; Offset it by x
+    add eax, ecx                ; Offset it by y
+    mov byte [eax], 'X'         ; Set current cell to alive
     jmp continue                ; Continue
 
 case_alive:
     call get_neighbour          ; Get alive neighbour count
-    cmp edx, 2                  ; Compare count to 2
+    cmp al, 2                   ; Compare count to 2
     jb kill                     ; If count < 2 kill cell
-    cmp edx, 4                  ; Compare count to 4
+    cmp al, 4                   ; Compare count to 4
     jae kill                    ; If count >= 4 kill cell
     jmp continue                ; Else, cell survives. Continue
 
 kill:
-    mov ecx, nextGen            ; Get address of current cell in nextGen
-    add ecx, eax                ; Offset it by x
-    add ecx, ebx                ; Offset it by y
-    mov byte [ecx], '-'         ; Set current cell to dead
+    mov eax, nextGen            ; Get address of current cell in nextGen
+    add eax, edx                ; Offset it by x
+    add eax, ecx                ; Offset it by y
+    mov byte [eax], '-'         ; Set current cell to dead
 
 continue:
     ; x++
-    inc eax                     ; Move onto next x
-    cmp eax, arrSize            ; Did we reach end of row?
+    inc dl                      ; Move onto next x
+    cmp dl, arrSize             ; Did we reach end of row?
     jne update                  ; If not, continue loop
 
     ; y++
-    add ebx, arrSize            ; Move on next row
-    xor eax, eax                ; Reset x
+    add cx, arrSize         ; Move on next row
+    xor dl, dl              ; Reset x
 
-    cmp ebx, arrSize*arrSize    ; Are we on last row?
+    cmp cx, arrSize*arrSize     ; Are we on last row?
     jne update                  ; If not, continue loop
 
     ; Clear coordinates
-    ; NOTE: Again, changed registers for x and y coordinates
     xor ecx, ecx                ; ECX is y
     xor edx, edx                ; EDX is x
 
@@ -182,15 +200,15 @@ copy_to_arr:
     mov byte [currentGen + edx + ecx], bl   ; currentGen[y][x] = input[y][x]
 
     ; x++
-    inc edx                     ; Move onto next x
-    cmp edx, arrSize            ; Did we reach end of row?
+    inc dl                      ; Move onto next x
+    cmp dl, arrSize             ; Did we reach end of row?
     jne copy_to_arr             ; If not, continue loop
 
     ; y++
-    add ecx, arrSize            ; Move on next row
-    xor edx, edx                ; Reset x
+    add cx, arrSize             ; Move on next row
+    xor dl, dl                  ; Reset x
 
-    cmp ecx, arrSize*arrSize    ; Are we on last row?
+    cmp cx, arrSize*arrSize     ; Are we on last row?
     jne copy_to_arr             ; If not, continue loop
 
     ; Pause
@@ -202,8 +220,8 @@ copy_to_arr:
     ; Clear screen
     call clean
 
-    xor ecx, ecx
-    xor edx, edx
+    xor cx, cx
+    xor dl, dl
     jmp print_arr
 
     ; Exit (technically we will never reach here)
@@ -217,72 +235,69 @@ copy_to_arr:
 ; int get_neighbour -- Counts amount of alive neighbour cell has
 ;
 ; IN:
-;   EAX: x coordinate
-;   EBX: y coordinate
+;   ECX: y coordinate
+;   EDX: x coordinate
 ; OUT:
 ;   EAX: Alive neighbour count
-;
-; NOTES:
-;   TODO: Store xMax and yMax in EDI and ESI (or EBP)
 ;---------------------------------------------------------------
 
 get_neighbour:
     ; Save registers
-    push ecx
-    push eax
     push ebx
+    push ecx
+    push edx
 
-    xor ecx, ecx                ; ECX will count neighbours
+    xor ebx, ebx                    ; EBX will count neighbours
 
-    ; x and y will represent xMax and yMax
-    mov dword [x], eax
-    inc dword [x]               ; xMax = x + 1
-    mov dword [y], ebx
-    add dword [y], arrSize      ; yMax = y + 1
+    ; Set xMax and yMax
+    mov byte [xMax], dl
+    inc byte [xMax]               ; xMax = x + 1
+    mov word [yMax], cx
+    add word [yMax], arrSize      ; yMax = y + 1
 
     ; Start from upper row
-    sub ebx, arrSize
+    sub cx, arrSize
 
 loop_y:
 
     ; Start from left x
-    mov eax, [x]
-    sub eax, 2
+    mov dl, [xMax]
+    sub dl, 2
 
 loop_x:
     call valid                  ; Check if current coordinate is valid
-    cmp edx, 0                  ; 
+    cmp al, 0                   ; 
     je hop                      ; If its invalid, continue loop
 
     ; If we're here, current coordinate is valid
-    cmp byte [currentGen + eax + ebx], '-'  ; Check if current coordinate is alive
+    cmp byte [currentGen + ecx + edx], '-'  ; Check if current coordinate is alive
     je hop                      ; If its not, continue loop
-    inc ecx                     ; Else increase counter
+    inc bl                      ; Else increase counter
 hop:
     ; x++
-    inc eax                     ; Move on next x
-    cmp eax, [x]                ; compare x to xMax
+    inc dl                      ; Move on next x
+    cmp dl, [xMax]              ; compare x to xMax
     jle loop_x                  ; if x <= xMax, continue loop
 
     ; y++
-    add ebx, arrSize            ; Move on next row
-    cmp ebx, [y]                ; Compare y to yMax
+    add cx, arrSize             ; Move on next row
+    cmp cx, [yMax]              ; Compare y to yMax
     jle loop_y                  ; If y <= yMax, continue loop
 
     ; Restore old values
-    pop ebx
-    pop eax
+    pop edx
+    pop ecx
 
     ; Check if current cell is alive
     ; If its alive, it will also be included in count
     ; so we need to remove it
-    cmp byte [currentGen + ebx + eax], '-'
+    cmp byte [currentGen + edx + ecx], '-'
     je end                      ; If dead, jump to end
-    dec ecx                     ; If alive, don't count self
+    dec bl                      ; If alive, don't count self
 end:    
-    mov edx, ecx                ; Put result in EAX
+    mov al, bl                  ; Put result in EAX
     
-    pop ecx ; Restore ECX
+    pop ebx ; Restore EBX
     ret
 
 
@@ -292,32 +307,32 @@ end:
 ; bool valid -- Checks whether a coordinate is within map bounds
 ;
 ; IN:
-;   EAX: x coordinate
-;   EBX: y coordinate
+;   ECX: y coordinate
+;   EDX: x coordinate
 ; OUT:
 ;   EDX: 1=valid | 0=invalid
 ;---------------------------------------------------------------
 
 valid:
     ; Check for x
-    cmp eax, 0                  ; Is x negative?
+    cmp dl, 0                   ; Is x negative?
     jl falsify                  ; If so, return false
-    cmp eax, arrSize            ; Is x >= xMax?
+    cmp dl, arrSize             ; Is x >= xMax?
     jge falsify                 ; If so, return false
 
     ; Check for y
-    cmp ebx, 0                  ; Is y negative?
+    cmp cx, 0                   ; Is y negative?
     jl falsify                  ; If so, return false
-    cmp ebx, arrSize*arrSize    ; Is y >= yMax?
+    cmp cx, arrSize*arrSize     ; Is y >= yMax?
     jge falsify                 ; If so, return false
     
     ; If we're here coordinate is valid. Return true
-    mov edx, 1
+    mov eax, 1
     ret
 
 falsify:
     ; If we're here coordinate is invalid. Return false
-    mov edx, 0
+    mov eax, 0
     ret
 
 
