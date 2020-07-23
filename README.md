@@ -1,5 +1,5 @@
 # Conway's Game of Life
-Simple implementation of Conway's Game of Life in NASM language. You can change map size and dead/alive cell character in source code.
+Simple implementation of Conway's Game of Life in NASM language. You can tweak map size and cell character in source code.
 ## Requirements
 You will need Linux with NASM assembler
 
