@@ -5,7 +5,7 @@ SECTION .data
     lenCleanCmd equ $ - cleanCmd
 
     ;------------------------
-    ; Change characters here
+    ; Change cell characters here
     ; NOTE: It needs to be a character, NOT string or unicode
     aliveChar db "O"
     deadChar  db `\'`
