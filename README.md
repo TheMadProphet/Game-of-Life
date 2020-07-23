@@ -1,5 +1,5 @@
 # Conway's Game of Life
-For compiling run:
+For compiling code:
 
     make
 For running the program:
