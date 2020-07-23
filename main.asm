@@ -12,8 +12,8 @@ SECTION .data
 
 
 SECTION .bss                    ; Section containing uninitialized data
-    currentGen resb sizeX * sizeY ; 
-    nextGen resb sizeX * sizeY    ; We will store new generation here
+    currentGen resb sizeX * sizeY   ; 
+    nextGen resb sizeX * sizeY      ; We will store new generation here
 
     yMax resb 4
     xMax resb 4
@@ -96,14 +96,14 @@ print_arr:
 
     ; y++
     add cx, sizeX               ; Move on next row
-    xor dx, dx              ; Reset x
+    xor dx, dx                  ; Reset x
 
     ; We reached end of row, so print newline
     mov eax, endl
     mov ebx, 1
     call print
 
-    cmp cx, sizeX * sizeY     ; Are we on last row?
+    cmp cx, sizeX * sizeY       ; Are we on last row?
     jne print_arr               ; If not, continue loop
 
     ; Clear coordinates
@@ -219,13 +219,13 @@ get_neighbour:
     push ecx
     push edx
 
-    xor ebx, ebx                    ; EBX will count neighbours
+    xor ebx, ebx                ; EBX will count neighbours
 
     ; Set xMax and yMax
     mov word [xMax], dx
-    inc word [xMax]                 ; xMax = x + 1
+    inc word [xMax]             ; xMax = x + 1
     mov word [yMax], cx
-    add word [yMax], sizeX          ; yMax = y + 1
+    add word [yMax], sizeX      ; yMax = y + 1
 
     ; Start from upper row
     sub cx, sizeX
@@ -271,7 +271,7 @@ hop:
 end:    
     mov al, bl                  ; Put result in EAX
     
-    pop ebx ; Restore EBX
+    pop ebx                     ; Restore EBX
     ret
 
 
